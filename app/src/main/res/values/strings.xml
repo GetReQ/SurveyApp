@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">SurveyApp</string>
+    <string name="data_sources">Sample Network</string>
+</resources>
