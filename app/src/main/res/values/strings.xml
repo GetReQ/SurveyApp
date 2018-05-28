@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">SurveyApp</string>
     <string name="data_sources">Sample Network</string>
+    <string name="error_network_retrieve">
+        An error has occurred downloading the network.
+    </string>
+    <string name="menu_get_network">Get Network</string>
 </resources>

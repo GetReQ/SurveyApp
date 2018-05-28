@@ -1,35 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="16dp"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_network"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <TextView
-        android:id="@+id/tv_data_sources"
+        android:id="@+id/tv_error_message_display"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/data_sources"
-        android:textSize="22sp"/>
+        android:padding="16dp"
+        android:text="@string/error_network_retrieve"
+        android:textSize="20sp"
+        android:visibility="invisible"/>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp">
-
-        <TextView
-            android:id="@+id/tv_network_results_json"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Network details!"
-            android:textSize="18sp"/>
-
-    </ScrollView>
-
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/pb_loading_indicator"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_gravity="center"
+        android:visibility="invisible"/>
+</FrameLayout>
