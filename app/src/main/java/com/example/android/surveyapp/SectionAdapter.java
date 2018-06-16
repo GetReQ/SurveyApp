@@ -19,7 +19,16 @@ import java.util.List;
 public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionViewHolder> {
     private List<Section> mSections;
 
-    public SectionAdapter() { }
+    final private ListItemClickListener mOnClickListener;   //item click event
+
+    //interface for an item click event
+    public interface ListItemClickListener {
+        void onListItemClick(int clickedItemIndex);
+    }
+
+    public SectionAdapter(ListItemClickListener listener) {
+        mOnClickListener = listener;
+    }
 
     @Override
     public SectionViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
@@ -50,7 +59,9 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
         notifyDataSetChanged();
     }
 
-    class SectionViewHolder extends RecyclerView.ViewHolder {
+    class SectionViewHolder extends RecyclerView.ViewHolder
+        implements View.OnClickListener {
+
         TextView sectionLabel;
         TextView sectionLength;
 
@@ -58,6 +69,7 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
             super(itemView);
             sectionLabel = (TextView) itemView.findViewById(R.id.tv_section_label);
             sectionLength = (TextView) itemView.findViewById(R.id.tv_section_length);
+            itemView.setOnClickListener(this);
         }
 
         void bind(int sectionPosition) {
@@ -67,6 +79,16 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
                 sectionLabel.setText(section.Label);
                 sectionLength.setText(String.valueOf(section.Length) + "m");
             }
+        }
+
+        /**
+         * Get the item clicked on within the recycler list.
+         * @param view
+         */
+        @Override
+        public void onClick(View view) {
+            int clickedPosition = getAdapterPosition();
+            mOnClickListener.onListItemClick(clickedPosition);
         }
     }
 
