@@ -1,5 +1,7 @@
 package com.example.android.surveyapp;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.android.surveyapp.adapters.SectionAdapter;
 import com.example.android.surveyapp.network.Network;
 import com.example.android.surveyapp.network.Section;
 import com.example.android.surveyapp.network.Asset;
@@ -82,18 +85,39 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    private int mPreviousItemClicked = -1;
     @Override
     public void onListItemClick(int clickedItemIndex) {
         if (mToast != null) {
             mToast.cancel();
         }
 
-        if (mNetwork != null){
-            String toastMessage = "Section: " + mNetwork.Sections.get(clickedItemIndex).Label;
+        if (mNetwork == null || mNetwork.Sections.size() < clickedItemIndex) return;
+
+        Section selectedSection = mNetwork.Sections.get(clickedItemIndex);
+        if (mPreviousItemClicked == clickedItemIndex){
+            //double click - start survey
+            NavigateToStartSurvey(selectedSection);
+        } else {
+            //display toast of selection
+            String toastMessage = "Section: " + selectedSection.Label;
             mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
             mToast.show();
         }
+
+        mPreviousItemClicked = clickedItemIndex;
     }
+
+    private void NavigateToStartSurvey(Section selectedSection)
+    {
+        Context context = MainActivity.this;
+        Class destinationActivity = SurveyActivity.class;
+        Intent startSurveyIntent = new Intent(context, destinationActivity);
+        startSurveyIntent.putExtra(Intent.EXTRA_TEXT, selectedSection.Label);
+        startActivity(startSurveyIntent);
+    }
+
+
 
     private void getNetworkData(){
         showSectionDataView();
