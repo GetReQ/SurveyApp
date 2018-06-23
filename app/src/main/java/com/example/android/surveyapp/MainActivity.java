@@ -15,6 +15,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.surveyapp.adapters.SectionAdapter;
+import com.example.android.surveyapp.network.GeoPoint;
+import com.example.android.surveyapp.network.Geometry;
 import com.example.android.surveyapp.network.Network;
 import com.example.android.surveyapp.network.Section;
 import com.example.android.surveyapp.network.Asset;
@@ -65,7 +67,6 @@ public class MainActivity extends AppCompatActivity
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        //getNetworkData();
     }
 
     @Override
@@ -185,18 +186,52 @@ public class MainActivity extends AppCompatActivity
             List<Section> networkSections = new ArrayList<>();
             for (int i=0; i<sections.length(); i++) {
                 try {
+                    //Get section attributes
                     JSONObject sectionRow = sections.getJSONObject(i);
                     int section_id = sectionRow.getInt("Id");
                     String section_label = sectionRow.getString("Label");
                     int section_length = sectionRow.getInt("Length");
+                    //Get geometry
+                    JSONObject geometryRow = sectionRow.getJSONObject("Geometry");
+                    Geometry geometry = getGeometryFromJson(geometryRow);
                     networkSections.add(
-                            new Section(section_id, section_label, section_length)
+                            new Section(section_id, section_label, section_length, geometry)
                     );
                  } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
             return networkSections;
+        }
+
+        private Geometry getGeometryFromJson(JSONObject geometryRow) {
+            Geometry geometry = null;
+            try{
+                String geometry_type = geometryRow.getString("Type");
+                geometry = new Geometry(geometry_type);
+                //Get coordinates
+                JSONArray coordinates = geometryRow.getJSONArray("Coordinates");
+                geometry.Coordinates = getGeometryPointsFromJsonArray(coordinates);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return geometry;
+        }
+
+        private List<GeoPoint> getGeometryPointsFromJsonArray(JSONArray coordinates) {
+            List<GeoPoint> geoPoints = new ArrayList<>();
+            for (int i=0; i<coordinates.length(); i++) {
+                try {
+                    JSONObject coordinatesRow = coordinates.getJSONObject(i);
+                    double latitude = coordinatesRow.getDouble("Latitude");
+                    double longitude = coordinatesRow.getDouble("Longitude");
+                    GeoPoint point = new GeoPoint(latitude, longitude);
+                    geoPoints.add(point);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return geoPoints;
         }
 
         private List<Asset> getAssetsFromJsonArray(JSONArray assets) {

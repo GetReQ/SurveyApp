@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class NetworkUtility {
 
     final static String SAMPLE_NETWORK_URL =
-            "https://raw.githubusercontent.com/GetReQ/NetworkJsonGenerator/master/output-examples/network-pretty.json";
+            "https://raw.githubusercontent.com/GetReQ/NetworkJsonGenerator/master/output-examples/network-pretty-geopoints.json";
 
     public static String getResponseFromHttpUrl() throws IOException {
         //Create URL object from sample network url
