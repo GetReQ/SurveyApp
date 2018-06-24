@@ -2,12 +2,14 @@ package com.example.android.surveyapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 import android.view.View;
@@ -66,7 +68,20 @@ public class MainActivity extends AppCompatActivity
         mSectionList.setAdapter(mSectionAdapter);
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+    }
 
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        //enable or disable map item depending on if a section is selected
+        //MenuItem item = menu.findItem(R.id.action_load_map);
+        /*if (mSelectedSection != null) {
+            item.setEnabled(true);
+            item.getIcon().setAlpha(255);
+        } else {
+            item.setEnabled(false);
+            item.getIcon().setAlpha(130);
+        }*/
+        return super.onMenuOpened(featureId, menu);
     }
 
     @Override
@@ -79,29 +94,39 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_refresh_network) {
-            getNetworkData();
-            return true;
+        switch(id) {
+            case R.id.action_refresh_network:
+                getNetworkData();
+                return true;
+            case R.id.action_load_map:
+                loadMap(mSelectedSection);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    ///Get the section selected based on the index clicked on the list
+    private Section getSectionSelected(int clickedItemIndex) {
+        if (mNetwork == null || mNetwork.Sections.size() < clickedItemIndex) return null;
+        return mNetwork.Sections.get(clickedItemIndex);
+    }
+
+    private Section mSelectedSection;   //The current section selected by the user
     private int mPreviousItemClicked = -1;
     @Override
     public void onListItemClick(int clickedItemIndex) {
-        if (mToast != null) {
+        mSelectedSection = getSectionSelected(clickedItemIndex);
+
+        if (mToast != null) { //Cancel the previous toast
             mToast.cancel();
         }
 
-        if (mNetwork == null || mNetwork.Sections.size() < clickedItemIndex) return;
-
-        Section selectedSection = mNetwork.Sections.get(clickedItemIndex);
         if (mPreviousItemClicked == clickedItemIndex){
             //double click - start survey
-            NavigateToStartSurvey(selectedSection);
+            NavigateToStartSurvey(mSelectedSection);
         } else {
             //display toast of selection
-            String toastMessage = "Section: " + selectedSection.Label;
+            String toastMessage = "Section: " + mSelectedSection.Label;
             mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
             mToast.show();
         }
@@ -118,8 +143,6 @@ public class MainActivity extends AppCompatActivity
         startActivity(startSurveyIntent);
     }
 
-
-
     private void getNetworkData(){
         showSectionDataView();
 
@@ -135,6 +158,43 @@ public class MainActivity extends AppCompatActivity
         mSectionList.setVisibility(View.INVISIBLE);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
+
+    private void loadMap(Section section) {
+        //Check section has geometry and at least one geometry point
+        if (section.Geometry != null && section.Geometry.Coordinates.size() > 0)
+        {
+            //Create intent for loading geopoint in map
+            Uri locationPointUri = generateGeopointUri(section);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(locationPointUri);
+            //Load map if intent can be resolved
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                //display toast of selection
+                String toastMessage = "No map app found.";
+                mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
+                mToast.show();
+            }
+        }
+    }
+
+    ///Create a URI for navigating to a geopoint
+    private Uri generateGeopointUri(Section section) {
+        if (section.Geometry.Coordinates.get(0) == null) return null;
+        GeoPoint point = section.Geometry.Coordinates.get(0);
+        String label = "Start: " + section.Label;
+        String latitude = String.valueOf(point.Latitude);
+        String longitude = String.valueOf(point.Longitude);
+        String location = latitude + "," + longitude;
+        String uriBegin = "geo:" + location;
+        String query = location + "(" + label + ")";
+        String encodedQuery = Uri.encode(query);
+        String uriString = uriBegin + "?q=" + encodedQuery + "&z=19";
+        Uri locationUri = Uri.parse(uriString);
+        return locationUri;
+    }
+
 
     public class SampleNetworkQueryTask extends AsyncTask<Void, Void, String> {
 
